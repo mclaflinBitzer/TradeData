@@ -14,7 +14,7 @@ def main():
     run_tests(data)
     
     # Export Transformed Data
-    export_data(transformed_data, 'data/output.csv')
+    export_data(transformed_data)
 
 if __name__ == "__main__":
     main()

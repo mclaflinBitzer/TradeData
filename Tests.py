@@ -1,6 +1,7 @@
 import ipytest
 import random
 import string
+import pandas as pd
 ipytest.autoconfig()
 from data_transform import models
 
@@ -66,6 +67,9 @@ def test_string_match_false2(models=models):
     assert models["results_mismatch2"].str.contains("Unknown_Model").sum() == len(models.index())
 
 
+def test_unknown_types(data):
+    
+    pass
 
-def run_tests():
+def run_tests(data):
     ipytest.run('-vv')
