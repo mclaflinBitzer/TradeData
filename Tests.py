@@ -5,7 +5,6 @@ import pandas as pd
 ipytest.autoconfig()
 from data_transform import models
 
-
 def get_random_descriptions(model_family, model_details, company, models=models):
     '''
     Get three random strings per row in model mapping. The first one should be identifiable and the second and third not. The third is also completely wrong.
@@ -68,7 +67,6 @@ def test_string_match_false2(models=models):
 
 
 def test_unknown_types(data):
-    
     pass
 
 def run_tests(data):

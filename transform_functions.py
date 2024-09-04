@@ -1,3 +1,4 @@
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -10,15 +11,32 @@ import nltk
 nltk.download('words')
 from nltk.corpus import words
 from fuzzywuzzy import fuzz
-from data_transform 
 import time
 
-def KGS_Outlier_Handling(data):
+def map_competitor(exporter, mapping):
+        for competitor, substrings in mapping.items():
+            for substring in substrings:
+                if substring in exporter:
+                    return competitor
+        return 'Other'
+
+def map_compressor(description, mapping):
+        for type, substring in mapping.items():
+            if substring in description:
+                return type
+        return ''
+
+def is_english_word(word, threshold=80):
+        english_words = set(words.words())
+        # Check for exact match
+        compressor_keywords = ["Screw", "Compressor", "Comp", "Compresor", "Recip", "Rotary", "Centrifugal"]
+        if word in english_words or word in compressor_keywords:
+            return True
+
+def KGS_Outlier_Handling(data, USD_EUR):
     #Identify competitors where deliveries are in KGS
     KGS_Deliveries = data.loc[(data['Quantity_Units'] == 'KGS') | (data['Quantity_Units'] == 'KGS ')]
-    print(len(KGS_Deliveries.index))
     competitors = set(KGS_Deliveries['Competitor'])
-    print(competitors)
     comp_types = set(KGS_Deliveries['comp_types'])
 
     for competitor in competitors:
@@ -38,7 +56,6 @@ def USD_EUR_Conversion(data, USD_EUR):
 
         # Currency conversion
         merged_data['Total_Euro_Amount'] = merged_data['Total_Dollar_Amount'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
-        print(merged_data[merged_data['Total_Euro_Amount'].isna()])
         merged_data['Total_Euro_Amount'] = merged_data['Total_Euro_Amount'].astype(int)
         merged_data['Euros_Unit_Price'] = merged_data['USD_Unit_Price'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
         merged_data['Euros_Unit_Price'] = merged_data['Euros_Unit_Price'].astype(int)
@@ -50,7 +67,7 @@ def USD_EUR_Conversion(data, USD_EUR):
 
 # Definition of string matching functions to get the model type and compressor type
 
-def string_match(description, company, mapping=models.copy()):
+def string_match(description, company, mapping):
     '''
     This function scans the detailed description column of the trade data for model descriptions corresponding to the company. Must be applied row-wise
     
@@ -116,7 +133,7 @@ def string_match(description, company, mapping=models.copy()):
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def exclude_parts(data, mapping_parts=models.copy()):
+def exclude_parts(data, mapping_parts):
     '''
     This function excludes parts according to the model mapping file. For a given company it excludes all records where a parts characters entry is in tthe product description and/or 
     the Eur_Unit_Price is smaller. This function also excludes ALL deliveries from unknown companies which are not specified in Supplier Names. Unique Company Names in models must
@@ -142,8 +159,6 @@ def exclude_parts(data, mapping_parts=models.copy()):
     mapping_parts["Parts Characters"] = mapping_parts["Parts Characters"].fillna("")
     mapping_parts["Min Unit Price"] = mapping_parts["Min Unit Price"].fillna(0)
 
-    print(mapping_parts)
-
     #
     dfs = []
     for company in companies:
@@ -156,15 +171,15 @@ def exclude_parts(data, mapping_parts=models.copy()):
                 continue
 
             elif filter["Parts Characters"][i] != "" and filter["Min Unit Price"][i] != 0:
-                print("Both:", company, filter["Parts Characters"][i], filter["Min Unit Price"][i])
+                #print("Both:", company, filter["Parts Characters"][i], filter["Min Unit Price"][i])
                 data_sel = data_sel[~((data_sel["Detailed_Description"].str.contains(filter["Parts Characters"][i])) & (data_sel["Euros_Unit_Price"] < filter["Min Unit Price"][i]))]
 
             elif filter["Parts Characters"][i] == "" and filter["Min Unit Price"][i] != 0:
-                print("Price:", company, filter["Min Unit Price"][i])
+                #print("Price:", company, filter["Min Unit Price"][i])
                 data_sel = data_sel[(data_sel["Euros_Unit_Price"] > filter["Min Unit Price"][i])]
 
             elif filter["Parts Characters"][i] != "" and filter["Min Unit Price"][i] == 0:
-                print("Characters:", company, filter["Parts Characters"][i])
+                #print("Characters:", company, filter["Parts Characters"][i])
                 data_sel = data_sel[(~data_sel["Detailed_Description"].str.contains(filter["Parts Characters"][i]))]
 
         dfs.append(data_sel)

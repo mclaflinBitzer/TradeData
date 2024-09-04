@@ -1,21 +1,10 @@
-from transform_functions import string_match, exclude_parts, USD_EUR_Conversion
+from transform_functions import USD_EUR_Conversion, map_competitor, map_compressor, KGS_Outlier_Handling, string_match, exclude_parts
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-from statistics import mean, stdev
-import seaborn as sns
-from itertools import chain
-import math
-import re
-import nltk
-nltk.download('words')
-from nltk.corpus import words
-from fuzzywuzzy import fuzz
-import time
 
 
-def transform_data(raw_data):
+def transform_data(raw_data, models):
+
+    print("Starting Data transformation")
     USD_EUR = pd.read_csv(r"K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/USD_EUR.csv")
 
     USD_EUR["DATE"] = pd.to_datetime(USD_EUR["DATE"], format=r"%Y-%m-%d")
@@ -36,8 +25,6 @@ def transform_data(raw_data):
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    print("Anzahl Quantaties kleiner gleich 0:",len(raw_data[raw_data["Quantity"] <= 0].index))
-    print(raw_data[raw_data["Quantity"] <= 0])
     raw_data = raw_data.drop(raw_data[raw_data["Quantity"] <= 0].index)
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -68,12 +55,6 @@ def transform_data(raw_data):
                             'Siam': ['SIAM'],
                             'Invotech': ['INVOTECH']}
 
-    def map_competitor(exporter, mapping):
-        for competitor, substrings in mapping.items():
-            for substring in substrings:
-                if substring in exporter:
-                    return competitor
-        return 'Other'
 
     raw_data['Foreign_Exporter'] = raw_data['Foreign_Exporter'].str.upper()
     raw_data["Competitor"] = raw_data['Foreign_Exporter'].apply(map_competitor, args=(competitor_mapping,))
@@ -86,12 +67,6 @@ def transform_data(raw_data):
                         'Scroll': 'SCROLL',
                         'Screw': 'SCREW',
                         'Rotary': 'ROTARY'}
-
-    def map_compressor(description, mapping):
-        for type, substring in mapping.items():
-            if substring in description:
-                return type
-        return ''
 
     raw_data['Compressor_Type'] = raw_data['Detailed_Description'].apply(lambda x: map_compressor(x, compressor_mapping))
 
@@ -112,20 +87,8 @@ def transform_data(raw_data):
         raw_data.loc[raw_data['Competitor'] == 'Bock', 'Detailed_Description'] = raw_data.loc[raw_data['Competitor'] == 'Bock', 'Detailed_Description'].str.replace(key, value)
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    #Function to check if word is (kind of) english
-
-    english_words = set(words.words())
-
-    def is_english_word(word, threshold=80):
-        # Check for exact match
-        compressor_keywords = ["Screw", "Compressor", "Comp", "Compresor", "Recip", "Rotary", "Centrifugal"]
-        if word in english_words or word in compressor_keywords:
-            return True
-
-    #----------------------------------------------------------------------------------------------------------------------------------------------------------
     
-    raw_data = exclude_parts(raw_data)
+    raw_data = exclude_parts(raw_data, models)
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -133,7 +96,9 @@ def transform_data(raw_data):
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"])), axis=1)
+    print("Starting Model Matching (This may take a while)")
+    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"], models)), axis=1)
+    print("Model Matching complete!")
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -176,7 +141,8 @@ def transform_data(raw_data):
     
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    raw_data = KGS_Outlier_Handling(raw_data, USD_EUR)
 
-
+    print("Data Transformation complete!")
     return raw_data
         

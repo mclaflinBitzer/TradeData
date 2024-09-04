@@ -5,6 +5,7 @@ import os
 
 
 def export_data(raw_data):
+    print("Starting Data Extraction")
     try:
         os.mkdir("C:/Tradedata_Output")
     except OSError as error:
@@ -18,3 +19,5 @@ def export_data(raw_data):
 
     excel_output.to_excel("C:/Tradedata_Output/data.xlsx", index=False)
     raw_data.to_csv("C:/Tradedata_Output/data.csv", index=False)
+
+    print("Data Extraction complete!")

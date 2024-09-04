@@ -16,6 +16,7 @@ import time
 
 def load_data(old_data_path):
 
+    print("Starting Data loading")
     try:
         os.access
     except OSError as error:
@@ -138,4 +139,5 @@ def load_data(old_data_path):
 
     raw_data = raw_data[~raw_data['Foreign_Exporter'].str.contains('MERCEDES|DAIMLER|VOLVO|TOYOTA|FORD|HYUNDAI|JAGUAR', case=False, regex=True)]
 
-    return raw_data
+    print("Data Load complete!")
+    return raw_data, models
