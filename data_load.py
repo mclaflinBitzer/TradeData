@@ -1,26 +1,11 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pinyin
-from statistics import mean, stdev
-import seaborn as sns
-from itertools import chain
 import math
-import re
-import nltk
-nltk.download('words')
-from nltk.corpus import words
-from fuzzywuzzy import fuzz
-import time
 
 def load_data(old_data_path):
 
     print("Starting Data loading")
-    try:
-        os.access
-    except OSError as error:
-        print("No previous dataframe found. ")
 
     column_translations = {'海关编码': 'HS_Code', 
                         '详细产品名称': 'Detailed_Description',
@@ -61,7 +46,7 @@ def load_data(old_data_path):
 
     #Load suplliers with their aliases
 
-    suppliers = pd.read_excel("K:\DESDN\mbd\pm\mpm_pma/00_Projekte\CSMO\Market Assessment\Market APAC\India\Handelsdatenprojekt/Daten/Supplier Names India.xlsx", header=2)
+    suppliers = pd.read_excel("K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/Supplier Names India.xlsx", header=2)
 
     suppliers = suppliers.to_dict('list')
 
@@ -78,7 +63,7 @@ def load_data(old_data_path):
 
     #Load model namings per supplier
 
-    models = pd.read_excel("K:\DESDN\mbd\pm\mpm_pma/00_Projekte\CSMO\Market Assessment\Market APAC\India\Handelsdatenprojekt\Daten\Model Mapping.xlsx")
+    models = pd.read_excel("K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/Model Mapping.xlsx")
     models["Model Details"] = models["Model Details"].fillna('').astype(str)
     models['Model Family'] = models['Model Family'].astype(str)
 
@@ -86,7 +71,7 @@ def load_data(old_data_path):
 
     #Load raw trade data
 
-    base_dir = 'K:\DESDN\mbd\pm\mpm_pma/00_Projekte\CSMO\Market Assessment\Market APAC\India\Handelsdatenprojekt\Daten/'
+    base_dir = 'K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/'
     subdirs = ['2021', '2022', '2023', '2024']
 
     # Initialize an empty list to store the file paths
@@ -133,11 +118,36 @@ def load_data(old_data_path):
     raw_data['Date'] = pd.to_datetime(raw_data['Date'], format="%Y/%m/%d")
     raw_data.sort_values("Date", inplace=True)
 
+    #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     #Filter out suppliers which are car companies
 
     raw_data['Foreign_Exporter'] = raw_data['Foreign_Exporter'].astype(str)
 
     raw_data = raw_data[~raw_data['Foreign_Exporter'].str.contains('MERCEDES|DAIMLER|VOLVO|TOYOTA|FORD|HYUNDAI|JAGUAR', case=False, regex=True)]
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    old_data = pd.read_csv(old_data_path)
+    print(old_data.info())
+    print("Number of Rows of old data:", len(old_data.index))
+
+    old_data["Date"] = pd.to_datetime(old_data["Date"], errors='coerce')
+    old_data = old_data.dropna(subset=["Date"])
+
+    old_latest_date = old_data["Date"].max()
+    new_data = raw_data.loc[(raw_data["Date"] > old_latest_date)]
+
+    '''
+    old_data_aligned = old_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]
+    raw_data_aligned = raw_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]
+
+    mask = ~raw_data_aligned.isin(old_data_aligned.to_dict(orient="list")).all(axis=1)
+
+    new_data = raw_data[mask]
+    '''
+
+    print("Number of Rows of new data:", len(new_data.index))
+
     print("Data Load complete!")
-    return raw_data, models
+    return new_data, models, old_data

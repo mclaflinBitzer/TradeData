@@ -20,11 +20,15 @@ def map_competitor(exporter, mapping):
                     return competitor
         return 'Other'
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def map_compressor(description, mapping):
         for type, substring in mapping.items():
             if substring in description:
                 return type
         return ''
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def is_english_word(word, threshold=80):
         english_words = set(words.words())
@@ -32,6 +36,8 @@ def is_english_word(word, threshold=80):
         compressor_keywords = ["Screw", "Compressor", "Comp", "Compresor", "Recip", "Rotary", "Centrifugal"]
         if word in english_words or word in compressor_keywords:
             return True
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def KGS_Outlier_Handling(data, USD_EUR):
     #Identify competitors where deliveries are in KGS
@@ -50,6 +56,8 @@ def KGS_Outlier_Handling(data, USD_EUR):
 
     return data    
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def USD_EUR_Conversion(data, USD_EUR):
 
         merged_data = data.merge(USD_EUR, left_on='Date', right_on='DATE', how='left')
@@ -65,8 +73,9 @@ def USD_EUR_Conversion(data, USD_EUR):
 
         return merged_data
 
-# Definition of string matching functions to get the model type and compressor type
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Definition of string matching function to get the model type and compressor type
 def string_match(description, company, mapping):
     '''
     This function scans the detailed description column of the trade data for model descriptions corresponding to the company. Must be applied row-wise
@@ -106,9 +115,10 @@ def string_match(description, company, mapping):
         if is_english_word(chunk):
             continue
         
-        
         for index, row in model_sel.iterrows():
-
+            
+            if index % 10 == 0:
+                 print("Index:", index)
             if row["Model Details"] != '':
             
                 # Check if both Model Family and Model Details are in chunk

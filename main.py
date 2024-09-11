@@ -5,16 +5,16 @@ from data_export import export_data
 
 def main():
     # Load Data
-    data, models = load_data('C:/Tradedata_output/data.csv')
+    new_data, models, old_data = load_data('C:/Tradedata_output/data.csv')
     
     # Transform Data
-    transformed_data = transform_data(data, models)
+    transformed_new_data = transform_data(new_data, models)
 
     # Run Tests on Transformed Data
-    #run_tests(data)
+    #run_tests(transform_new_data, models, old_data)
     
     # Export Transformed Data
-    export_data(transformed_data)
+    export_data(transformed_new_data, old_data)
 
 if __name__ == "__main__":
     main()

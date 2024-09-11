@@ -4,6 +4,9 @@ import pandas as pd
 
 def transform_data(raw_data, models):
 
+    raw_data = raw_data.copy()
+    models = models.copy()
+    
     print("Starting Data transformation")
     USD_EUR = pd.read_csv(r"K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/USD_EUR.csv")
 

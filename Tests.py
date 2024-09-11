@@ -4,6 +4,7 @@ import string
 import pandas as pd
 ipytest.autoconfig()
 from data_transform import models
+import statistics
 
 def get_random_descriptions(model_family, model_details, company, models=models):
     '''
@@ -66,8 +67,21 @@ def test_string_match_false2(models=models):
     assert models["results_mismatch2"].str.contains("Unknown_Model").sum() == len(models.index())
 
 
-def test_unknown_types(data):
-    pass
+def test_distribution(new_data, old_data):
+    four_months_ago = old_data['date'].max() - pd.DateOffset(months=3)
+    old_data = old_data[old_data['date'] > four_months_ago]
 
-def run_tests(data):
-    ipytest.run('-vv')
+    previous_grouped = old_data.groupby(["Competitor", "models"]).agg({"Quantity": "sum", "Total_Euro_Amount": "eur_value", "Total_Rupees_Amount": "inr_value"}).reset_index()
+    current_grouped = new_data.groupby(["Competitor", "models"]).agg({"Quantity": "sum", "Total_Euro_Amount": "eur_value", "Total_Rupees_Amount": "inr_value"}).reset_index()
+    
+    companies = old_data['Competitor'].unique()
+    for company in companies:
+
+        prev_company = previous_grouped[previous_grouped["Competitor"]]
+        curr_company = current_grouped[current_grouped["Competitor"]]
+
+        merged = pd.merge(prev_company, curr_company, on='model', how='outer', suffixes=('_prev', '_curr')).fillna(0)
+
+
+#def run_tests(data):
+    #ipytest.run('-vv')
