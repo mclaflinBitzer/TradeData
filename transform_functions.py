@@ -75,8 +75,21 @@ def USD_EUR_Conversion(data, USD_EUR):
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+def preprocess_mapping(mapping):
+    """
+    Preprocess the mapping DataFrame to create a dictionary with the company as the key.
+    This allows for faster lookups in the main function.
+    """
+    company_dict = {}
+    for company in mapping['Company'].unique():
+        company_df = mapping[mapping['Company'] == company]
+        company_dict[company] = company_df
+    return company_dict
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Definition of string matching function to get the model type and compressor type
-def string_match(description, company, mapping):
+def string_match(description, company, company_dict):
     '''
     This function scans the detailed description column of the trade data for model descriptions corresponding to the company. Must be applied row-wise
     
@@ -91,54 +104,46 @@ def string_match(description, company, mapping):
     '''
    
     
+    if company == "Other":
+        return "Unknown_Company", "", "Unknown_Family"
+    
     model = "Unknown_Model"
     comp_type = ""
     comp_family = "Unknown_Family"
 
-    if company == "Other":
-        return "Unknown_Company", comp_type, comp_family
-    
-    #delimiters = [",", "-", ":", " ", "/", "(", ")", "_", "&", ".", ";", "[", "]"]
-    
-    #chunks = re.split(r'|'.join(delimiters), description)
-
-    #Workaround since for Bitzer there are models named COMPRESSOR I and so on
+    # Pre-split description if the company isn't BITZER
     if company != "BITZER":
-        chunks = str.split(description)
+        chunks = description.split()
     else:
         chunks = [description]
-    model_sel = mapping[mapping["Company"] == company]
+
+    # Retrieve the preprocessed company-specific mapping
+    model_sel = company_dict.get(company, None)
+    if model_sel is None:
+        return model, comp_type, comp_family
 
     for chunk in chunks:
-        
-        #Only model descriptions are interesting
         if is_english_word(chunk):
             continue
-        
-        for index, row in model_sel.iterrows():
-            
-            if index % 10 == 0:
-                 print("Index:", index)
-            if row["Model Details"] != '':
-            
-                # Check if both Model Family and Model Details are in chunk
-                if row['Model Family'] in chunk and row['Model Details'] in chunk:
-                    # Get the positions of Model Family and Model Details
-                    family_index = chunk.find(row['Model Family'])
-                    details_index = chunk.find(row['Model Details'])
-                    
-                    
-                    # Ensure Model Details appears after Model Family
-                    if family_index < details_index:
-                        model = f"{row['Model Family']}...{row['Model Details']}"
+
+        for _, row in model_sel.iterrows():
+            model_family = row['Model Family']
+            model_details = row['Model Details']
+
+            if model_family in chunk:
+                if model_details and model_details in chunk:
+                    # Check order of family and details
+                    if chunk.find(model_family) < chunk.find(model_details):
+                        model = f"{model_family}...{model_details}"
                         comp_type = row['Compressor Type']
                         comp_family = row['Compressor Family']
-            else:
-                if row['Model Family'] in chunk:
-                    model = row["Model Family"]
+                        return model, comp_type, comp_family  # Early exit on first match
+                else:
+                    model = model_family
                     comp_type = row['Compressor Type']
                     comp_family = row['Compressor Family']
-                
+                    return model, comp_type, comp_family  # Early exit on first match
+
     return model, comp_type, comp_family
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------

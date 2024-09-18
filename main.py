@@ -1,7 +1,7 @@
 from data_load import load_data
 from data_transform import transform_data
 from data_export import export_data
-#from Tests import run_tests
+from Tests import test_distribution
 
 def main():
     # Load Data
@@ -12,6 +12,7 @@ def main():
 
     # Run Tests on Transformed Data
     #run_tests(transform_new_data, models, old_data)
+    test_distribution(transformed_new_data, old_data)
     
     # Export Transformed Data
     export_data(transformed_new_data, old_data)

@@ -135,8 +135,10 @@ def load_data(old_data_path):
     old_data["Date"] = pd.to_datetime(old_data["Date"], errors='coerce')
     old_data = old_data.dropna(subset=["Date"])
 
+    
     old_latest_date = old_data["Date"].max()
     new_data = raw_data.loc[(raw_data["Date"] > old_latest_date)]
+    
 
     '''
     old_data_aligned = old_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]

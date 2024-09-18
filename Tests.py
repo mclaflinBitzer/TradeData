@@ -2,18 +2,18 @@ import ipytest
 import random
 import string
 import pandas as pd
-ipytest.autoconfig()
-from data_transform import models
+#ipytest.autoconfig()
 import statistics
 
+'''
 def get_random_descriptions(model_family, model_details, company, models=models):
-    '''
-    Get three random strings per row in model mapping. The first one should be identifiable and the second and third not. The third is also completely wrong.
-    Use this to check if string_match function for detailed description works properly.
+    #
+   # Get three random strings per row in model mapping. The first one should be identifiable and the second and third not. The third is also completely wrong.
+   # Use this to check if string_match function for detailed description works properly.
 
-    Returns:
-        string_match, string_mismatch1, string_mismatch2 (tuple): tuple of string that matches and string that doesn't match
-    '''
+   # Returns:
+   #     string_match, string_mismatch1, string_mismatch2 (tuple): tuple of string that matches and string that doesn't match
+    #
 
     sel = models[(models["Company"] == company) & (models["Model Family"] != model_family) & (models["Model Details"] != model_details)]
     other_families = sel['Model Family']
@@ -65,22 +65,39 @@ def test_string_match_false2(models=models):
     models.drop("2")
 
     assert models["results_mismatch2"].str.contains("Unknown_Model").sum() == len(models.index())
-
+'''
 
 def test_distribution(new_data, old_data):
-    four_months_ago = old_data['date'].max() - pd.DateOffset(months=3)
-    old_data = old_data[old_data['date'] > four_months_ago]
+    four_months_ago = old_data['Date'].max() - pd.DateOffset(months=3)
+    old_data = old_data[old_data['Date'] > four_months_ago]
 
-    previous_grouped = old_data.groupby(["Competitor", "models"]).agg({"Quantity": "sum", "Total_Euro_Amount": "eur_value", "Total_Rupees_Amount": "inr_value"}).reset_index()
-    current_grouped = new_data.groupby(["Competitor", "models"]).agg({"Quantity": "sum", "Total_Euro_Amount": "eur_value", "Total_Rupees_Amount": "inr_value"}).reset_index()
-    
-    companies = old_data['Competitor'].unique()
-    for company in companies:
+    previous_grouped = old_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity', 'mean'),
+        Quantity_std=('Quantity', 'std'),
+        Total_Dollar_Amount_mean=('Total_Dollar_Amount', 'mean'),
+        Total_Dollar_Amount_std=('Total_Dollar_Amount', 'std')
+    ).reset_index()
+    current_grouped = new_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity', 'mean'),
+        Total_Dollar_Amount_mean=('Total_Dollar_Amount', 'mean')
+    ).reset_index()
 
-        prev_company = previous_grouped[previous_grouped["Competitor"]]
-        curr_company = current_grouped[current_grouped["Competitor"]]
+    print(previous_grouped.columns, current_grouped.columns)
+    merged = pd.merge(previous_grouped, current_grouped, on=['Competitor', 'models'], suffixes=('_old', '_new'))
 
-        merged = pd.merge(prev_company, curr_company, on='model', how='outer', suffixes=('_prev', '_curr')).fillna(0)
+    outliers = merged[
+        (merged['Quantity_mean_new'] > merged['Quantity_mean_old'] + merged['Quantity_std']) |
+        (merged['Quantity_mean_new'] < merged['Quantity_mean_old'] - merged['Quantity_std']) |
+        (merged['Total_Dollar_Amount_mean_new'] > merged['Total_Dollar_Amount_mean_old'] + merged['Total_Dollar_Amount_std']) |
+        (merged['Total_Dollar_Amount_mean_new'] < merged['Total_Dollar_Amount_mean_old'] - merged['Total_Dollar_Amount_std'])
+    ]
+
+    outliers.rename(columns = {'Quantity_std': 'Quantity_std_old',
+                               'Total_Dollar_Amount_std': 'Total_Dollar_Amount_std_old'},
+                               inplace=True)
+    if len(outliers.index) > 0:
+        print("The following model(s) mean(s) from the last month are outside its standard deviation(s) from the preceeding three months:")
+        print(outliers[['Competitor', 'models', 'Quantity_mean_new', 'Quantity_mean_old', 'Quantity_std_old', 'Total_Dollar_Amount_mean_new', 'Total_Dollar_Amount_mean_old', 'Total_Dollar_Amount_std_old']])
+    else:
+        print("No model distribution deviations detected")
 
 
 #def run_tests(data):

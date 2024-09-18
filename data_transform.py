@@ -1,6 +1,6 @@
-from transform_functions import USD_EUR_Conversion, map_competitor, map_compressor, KGS_Outlier_Handling, string_match, exclude_parts
+from transform_functions import USD_EUR_Conversion, map_competitor, map_compressor, KGS_Outlier_Handling, string_match, exclude_parts, preprocess_mapping
 import pandas as pd
-
+import swifter
 
 def transform_data(raw_data, models):
 
@@ -100,7 +100,8 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     print("Starting Model Matching (This may take a while)")
-    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"], models)), axis=1)
+    mapping_preprocessed = preprocess_mapping(models)
+    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.swifter.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"], mapping_preprocessed)), axis=1)
     print("Model Matching complete!")
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
