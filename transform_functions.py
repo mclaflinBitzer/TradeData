@@ -1,17 +1,7 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-from statistics import mean, stdev
-import seaborn as sns
-from itertools import chain
-import math
-import re
 import nltk
-nltk.download('words')
+nltk.download('words', quiet=True)
 from nltk.corpus import words
-from fuzzywuzzy import fuzz
-import time
 
 def map_competitor(exporter, mapping):
         for competitor, substrings in mapping.items():

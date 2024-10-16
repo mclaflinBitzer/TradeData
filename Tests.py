@@ -70,17 +70,23 @@ def test_string_match_false2(models=models):
 def test_distribution(new_data, old_data):
     four_months_ago = old_data['Date'].max() - pd.DateOffset(months=3)
     old_data = old_data[old_data['Date'] > four_months_ago]
+    
 
-    previous_grouped = old_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity', 'mean'),
-        Quantity_std=('Quantity', 'std'),
-        Total_Dollar_Amount_mean=('Total_Dollar_Amount', 'mean'),
-        Total_Dollar_Amount_std=('Total_Dollar_Amount', 'std')
+    previous_grouped = old_data.groupby(["Competitor", "models", "Date"]).agg(Quantity_sum=("Quantity", "sum"),
+                                                                              Total_Dollar_Amount_sum=("Total_Dollar_Amount", "sum"))
+    
+    current_grouped = new_data.groupby(["Competitor", "models", "Date"]).agg(Quantity_sum=("Quantity", "sum"),
+                                                                              Total_Dollar_Amount_sum=("Total_Dollar_Amount", "sum"))
+
+    previous_grouped = old_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
+        Quantity_std=('Quantity_sum', 'std'),
+        Total_Dollar_Amount_mean=('Total_Dollar_Amount_sum', 'mean'),
+        Total_Dollar_Amount_std=('Total_Dollar_Amount_sum', 'std')
     ).reset_index()
-    current_grouped = new_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity', 'mean'),
-        Total_Dollar_Amount_mean=('Total_Dollar_Amount', 'mean')
+    current_grouped = new_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
+        Total_Dollar_Amount_mean=('Total_Dollar_Amount_sum', 'mean')
     ).reset_index()
 
-    print(previous_grouped.columns, current_grouped.columns)
     merged = pd.merge(previous_grouped, current_grouped, on=['Competitor', 'models'], suffixes=('_old', '_new'))
 
     outliers = merged[
