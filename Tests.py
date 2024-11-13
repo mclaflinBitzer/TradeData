@@ -68,6 +68,8 @@ def test_string_match_false2(models=models):
 '''
 
 def test_distribution(new_data, old_data):
+    if len(old_data.index) == 0:
+        old_data = new_data
     four_months_ago = old_data['Date'].max() - pd.DateOffset(months=3)
     old_data = old_data[old_data['Date'] > four_months_ago]
     

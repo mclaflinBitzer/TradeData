@@ -128,19 +128,23 @@ def load_data(old_data_path):
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    old_data = pd.read_csv(old_data_path)
-    print("Number of Rows of old data:", len(old_data.index))
+    if os.path.exists(old_data_path):
+        old_data = pd.read_csv(old_data_path)
+        print("Number of Rows of old data:", len(old_data.index))
 
-    old_data["Date"] = pd.to_datetime(old_data["Date"], errors='coerce')
-    old_data = old_data.dropna(subset=["Date"])
+        old_data["Date"] = pd.to_datetime(old_data["Date"], errors='coerce')
+        old_data = old_data.dropna(subset=["Date"])
 
     
-    old_latest_date = old_data["Date"].max()
-    new_data = raw_data.loc[(raw_data["Date"] > old_latest_date)]
+        old_latest_date = old_data["Date"].max()
+        new_data = raw_data.loc[(raw_data["Date"] > old_latest_date)]
     
     #If script is run again but no new data is available, the last month will become the new data (For testing and demo purposes)
-    if len(new_data.index) == 0:
-        new_data = raw_data.loc[(raw_data['Date'] > raw_data['Date'].max() - pd.DateOffset(months=1))]
+        if len(new_data.index) == 0:
+            new_data = raw_data.loc[(raw_data['Date'] > raw_data['Date'].max() - pd.DateOffset(months=1))]
+    else:
+        old_data = pd.DataFrame(columns=raw_data.columns)
+        new_data = raw_data
 
     '''
     old_data_aligned = old_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]
