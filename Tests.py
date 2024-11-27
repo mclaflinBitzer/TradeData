@@ -80,12 +80,12 @@ def test_distribution(new_data, old_data):
     current_grouped = new_data.groupby(["Competitor", "models", "Date"]).agg(Quantity_sum=("Quantity", "sum"),
                                                                               Total_Dollar_Amount_sum=("Total_Dollar_Amount", "sum"))
 
-    previous_grouped = old_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
+    previous_grouped = previous_grouped.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
         Quantity_std=('Quantity_sum', 'std'),
         Total_Dollar_Amount_mean=('Total_Dollar_Amount_sum', 'mean'),
         Total_Dollar_Amount_std=('Total_Dollar_Amount_sum', 'std')
     ).reset_index()
-    current_grouped = new_data.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
+    current_grouped = current_grouped.groupby(["Competitor", "models"]).agg(Quantity_mean=('Quantity_sum', 'mean'),
         Total_Dollar_Amount_mean=('Total_Dollar_Amount_sum', 'mean')
     ).reset_index()
 

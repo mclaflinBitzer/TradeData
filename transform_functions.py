@@ -105,7 +105,7 @@ def string_match(description, company, company_dict):
     if company != "BITZER":
         chunks = description.split()
     else:
-        chunks = [description]
+        chunks = description
 
     # Retrieve the preprocessed company-specific mapping
     model_sel = company_dict.get(company, None)

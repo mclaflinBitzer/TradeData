@@ -13,6 +13,9 @@ def export_data(new_data, old_data):
     new_data['Year'] = new_data['Date'].dt.year
     new_data['Month'] = new_data['Date'].dt.month
 
+    max_month = str(new_data['Month'].max())
+    max_year = str(new_data['Year'].max())
+
     print("Combining new and old data")
     output = pd.concat([old_data, new_data])
 
@@ -21,7 +24,7 @@ def export_data(new_data, old_data):
 
     print("Extracting to Excel and CSV")
     excel_output = output[["Year", "Month", "Competitor", "comp_types", "comp_family", "models", "Indian_Importer", "Detailed_Description", "Total_Euro_Amount", "Total_Rupees_Amount", "Quantity"]]
-    excel_output.to_excel("C:/Tradedata_Output/data.xlsx", index=False)
+    excel_output.to_excel(f"C:/Tradedata_Output/Import Data India_Compressors_{max_month}{max_year}.xlsx", index=False)
 
     output.to_csv("C:/Tradedata_Output/data.csv", index=False)
 
