@@ -62,6 +62,7 @@ def transform_data(raw_data, models):
     raw_data['Foreign_Exporter'] = raw_data['Foreign_Exporter'].str.upper()
     raw_data["Competitor"] = raw_data['Foreign_Exporter'].apply(map_competitor, args=(competitor_mapping,))
 
+
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Categorize compressor types
@@ -101,7 +102,8 @@ def transform_data(raw_data, models):
 
     print("Starting Model Matching (This may take a while)")
     mapping_preprocessed = preprocess_mapping(models)
-    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.swifter.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"], mapping_preprocessed)), axis=1)
+    raw_data[['models', 'comp_types', 'comp_family']] = raw_data.apply(lambda row: pd.Series(string_match(row["Detailed_Description"], row["Competitor"], mapping_preprocessed)), axis=1)
+    
     print("Model Matching complete!")
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -147,6 +149,7 @@ def transform_data(raw_data, models):
 
     raw_data = KGS_Outlier_Handling(raw_data, USD_EUR)
 
+    
     print("Data Transformation complete!")
     return raw_data
         

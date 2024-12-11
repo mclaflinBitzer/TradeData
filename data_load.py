@@ -142,20 +142,17 @@ def load_data(old_data_path):
     #If script is run again but no new data is available, the last month will become the new data (For testing and demo purposes)
         if len(new_data.index) == 0:
             new_data = raw_data.loc[(raw_data['Date'] > raw_data['Date'].max() - pd.DateOffset(months=1))]
+            old_data = old_data.loc[(old_data['Date'] < old_data['Date'].max() - pd.DateOffset(months=1))]
     else:
         old_data = pd.DataFrame(columns=raw_data.columns)
         new_data = raw_data
 
-    '''
-    old_data_aligned = old_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]
-    raw_data_aligned = raw_data[["HS_Code", 'Detailed_Description', 'Date', 'Quantity', 'Total_Rupees_Amount']]
-
-    mask = ~raw_data_aligned.isin(old_data_aligned.to_dict(orient="list")).all(axis=1)
-
-    new_data = raw_data[mask]
-    '''
+    print("Loaded models:", models)
 
     print("Number of Rows of new data:", len(new_data.index))
 
     print("Data Load complete!")
+
+    
+
     return new_data, models, old_data

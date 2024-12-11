@@ -1,5 +1,6 @@
 import pandas as pd
 import nltk
+import re
 nltk.download('words', quiet=True)
 from nltk.corpus import words
 
@@ -42,7 +43,7 @@ def KGS_Outlier_Handling(data, USD_EUR):
             data.loc[sel.index] = USD_EUR_Conversion(sel, USD_EUR)
 
     #Drop deliveries where Unit Prices are too low
-    data = data.drop(data[(data["Euros_Unit_Price"] <= 90) & (data['Quantity_Units'] != 'KGS') & (data['Quantity_Units'] != 'KGS ')].index)
+    data = data.drop(data[(data["Euros_Unit_Price"] <= 90) & (data['Quantity_Units'] != 'KGS')].index)
 
     return data    
 
@@ -86,7 +87,7 @@ def string_match(description, company, company_dict):
     Args:
         description (Iterable): Detailed Description column
         company (Iterable): Company column
-        mapping (pandas.DataFrame): Optional, the model mapping per company with comp types. Defaults to models
+        company_dict (pandas.DataFrame): The model mapping per company with comp types. Defaults to models
 
     Returns:
         Tuple: model, comp_type, comp_family per row as a tuple of strings. Returns "Unknown Model" if model is unknown or "Unknown Company" if company is unknown
@@ -100,41 +101,44 @@ def string_match(description, company, company_dict):
     model = "Unknown_Model"
     comp_type = ""
     comp_family = "Unknown_Family"
-
-    # Pre-split description if the company isn't BITZER
-    if company != "BITZER":
-        chunks = description.split()
-    else:
-        chunks = description
+    
 
     # Retrieve the preprocessed company-specific mapping
     model_sel = company_dict.get(company, None)
     if model_sel is None:
-        return model, comp_type, comp_family
+        print("Company not found in mapping:", company)
+        return "Unknown_Company", "", "Unknown_Family"
 
-    for chunk in chunks:
-        if is_english_word(chunk):
-            continue
-
-        for _, row in model_sel.iterrows():
-            model_family = row['Model Family']
-            model_details = row['Model Details']
-
-            if model_family in chunk:
-                if model_details and model_details in chunk:
-                    # Check order of family and details
-                    if chunk.find(model_family) < chunk.find(model_details):
-                        model = f"{model_family}...{model_details}"
-                        comp_type = row['Compressor Type']
-                        comp_family = row['Compressor Family']
-                        return model, comp_type, comp_family  # Early exit on first match
-                else:
-                    model = model_family
+    for _, row in model_sel.iterrows():
+        
+        if row["Model Details"] != '':
+        
+            # Check if both Model Family and Model Details are in chunk
+            if row['Model Family'] in description and row['Model Details'] in description:
+                # Get the positions of Model Family and Model Details
+                family_index = description.find(row['Model Family'])
+                details_index = description.find(row['Model Details'])
+                
+                
+                # Ensure Model Details appears after Model Family
+                if family_index < details_index:
+                    model = f"{row['Model Family']}...{row['Model Details']}"
                     comp_type = row['Compressor Type']
                     comp_family = row['Compressor Family']
-                    return model, comp_type, comp_family  # Early exit on first match
-
-    return model, comp_type, comp_family
+                    return model, comp_type, comp_family # Early return to avoid further processing
+                else:
+                    continue
+                
+        else:
+            if row['Model Family'] in description:
+                model = row["Model Family"]
+                comp_type = row['Compressor Type']
+                comp_family = row['Compressor Family']
+                return model, comp_type, comp_family # Early return to avoid further processing
+            else:
+                continue
+            
+    return "Unknown_Model", "", "Unknown_Family"
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -154,20 +158,22 @@ def exclude_parts(data, mapping_parts):
 
     dfs = []
 
+    mapping_parts_local = mapping_parts.copy()
+
     #Get unique company names
-    companies = mapping_parts["Company"].unique()
+    companies = mapping_parts_local["Company"].unique()
 
     #Drop redundant rows where no Parts Characters AND Min Unit Price aren't specified
-    mapping_parts.dropna(subset=["Parts Characters", "Min Unit Price"], how="all", inplace=True)
+    mapping_parts_local.dropna(subset=["Parts Characters", "Min Unit Price"], how="all", inplace=True)
 
     #Fill empty cells with dummy values which won't filter
-    mapping_parts["Parts Characters"] = mapping_parts["Parts Characters"].fillna("")
-    mapping_parts["Min Unit Price"] = mapping_parts["Min Unit Price"].fillna(0)
+    mapping_parts_local["Parts Characters"] = mapping_parts_local["Parts Characters"].fillna("")
+    mapping_parts_local["Min Unit Price"] = mapping_parts_local["Min Unit Price"].fillna(0)
 
     #
     dfs = []
     for company in companies:
-        model_sel = mapping_parts[mapping_parts["Company"] == company]
+        model_sel = mapping_parts_local[mapping_parts_local["Company"] == company]
         filter = model_sel[["Parts Characters", "Min Unit Price"]]
         data_sel = data[data["Competitor"] == company]
         

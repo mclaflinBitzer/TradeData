@@ -18,6 +18,7 @@ def export_data(new_data, old_data):
     print("Combining new and old data")
     output = pd.concat([old_data, new_data])
 
+
     print("Checking for and dropping duplicates")
     output.drop_duplicates(inplace=True)
 
