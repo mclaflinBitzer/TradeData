@@ -9,7 +9,6 @@ def export_data(new_data, old_data):
     except OSError:
         print("Directory C:/Tradedata_Output already exists")
 
-
     new_data['Year'] = new_data['Date'].dt.year
     new_data['Month'] = new_data['Date'].dt.month
 
