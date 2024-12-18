@@ -108,8 +108,16 @@ def string_match(description, company, company_dict):
     if model_sel is None:
         print("Company not found in mapping:", company)
         return "Unknown_Company", "", "Unknown_Family"
+    
+    
+    short_models = []
 
     for _, row in model_sel.iterrows():
+        
+        # If model description is only one letter then look for other matches first
+        if len(row["Model Family"]) < 2 and len(row["Model Details"]) == 0:
+            short_models.append(row["Model Family"])
+            continue
         
         if row["Model Details"] != '':
         
@@ -135,6 +143,17 @@ def string_match(description, company, company_dict):
                 comp_type = row['Compressor Type']
                 comp_family = row['Compressor Family']
                 return model, comp_type, comp_family # Early return to avoid further processing
+            else:
+                continue
+    
+    # Special case if no match has been found and there a short model descriptions yet to check
+    if len(short_models) > 0:
+        for short_model in short_models:
+            if short_model in description:
+                model = short_model
+                comp_type = model_sel.loc[model_sel["Model Family"] == short_model, "Compressor Type"].values[0]
+                comp_family = model_sel.loc[model_sel["Model Family"] == short_model, "Compressor Family"].values[0]
+                return model, comp_type, comp_family
             else:
                 continue
             
