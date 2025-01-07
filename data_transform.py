@@ -17,7 +17,7 @@ def transform_data(raw_data, models):
     full_date_range = pd.date_range(start=USD_EUR.index.min(), end=USD_EUR.index.max())
     USD_EUR = USD_EUR.reindex(full_date_range)
 
-    USD_EUR['US dollar/Euro (EXR.D.USD.EUR.SP00.A)'] = USD_EUR['US dollar/Euro (EXR.D.USD.EUR.SP00.A)'].ffill().bfill()
+    USD_EUR['Euro/US dollar (EXR.D.USD.EUR.SP00.A)'] = USD_EUR['Euro/US dollar (EXR.D.USD.EUR.SP00.A)'].ffill().bfill()
 
     USD_EUR.reset_index(inplace=True)
     USD_EUR.rename(columns={'index': 'DATE'}, inplace=True)

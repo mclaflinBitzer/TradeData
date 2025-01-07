@@ -54,13 +54,13 @@ def USD_EUR_Conversion(data, USD_EUR):
         merged_data = data.merge(USD_EUR, left_on='Date', right_on='DATE', how='left')
 
         # Currency conversion
-        merged_data['Total_Euro_Amount'] = merged_data['Total_Dollar_Amount'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
+        merged_data['Total_Euro_Amount'] = merged_data['Total_Dollar_Amount'] / merged_data['Euro/US dollar (EXR.D.USD.EUR.SP00.A)']
         merged_data['Total_Euro_Amount'] = merged_data['Total_Euro_Amount'].astype(int)
-        merged_data['Euros_Unit_Price'] = merged_data['USD_Unit_Price'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
+        merged_data['Euros_Unit_Price'] = merged_data['USD_Unit_Price'] / merged_data['Euro/US dollar (EXR.D.USD.EUR.SP00.A)']
         merged_data['Euros_Unit_Price'] = merged_data['Euros_Unit_Price'].astype(int)
 
         # Drop the extra 'DATE' column from the merge if desired
-        merged_data.drop(columns=['DATE', 'US dollar/Euro (EXR.D.USD.EUR.SP00.A)'], inplace=True)
+        merged_data.drop(columns=['DATE', 'Euro/US dollar (EXR.D.USD.EUR.SP00.A)'], inplace=True)
 
         return merged_data
 
@@ -109,15 +109,11 @@ def string_match(description, company, company_dict):
         print("Company not found in mapping:", company)
         return "Unknown_Company", "", "Unknown_Family"
     
+    models_sorted = model_sel.sort_values(by="Model Family", key=lambda col: col.str.len(), ascending=False)
     
     short_models = []
 
-    for _, row in model_sel.iterrows():
-        
-        # If model description is only one letter then look for other matches first
-        if len(row["Model Family"]) < 2 and len(row["Model Details"]) == 0:
-            short_models.append(row["Model Family"])
-            continue
+    for _, row in models_sorted.iterrows():
         
         if row["Model Details"] != '':
         
@@ -126,7 +122,6 @@ def string_match(description, company, company_dict):
                 # Get the positions of Model Family and Model Details
                 family_index = description.find(row['Model Family'])
                 details_index = description.find(row['Model Details'])
-                
                 
                 # Ensure Model Details appears after Model Family
                 if family_index < details_index:
@@ -146,17 +141,6 @@ def string_match(description, company, company_dict):
             else:
                 continue
     
-    # Special case if no match has been found and there a short model descriptions yet to check
-    if len(short_models) > 0:
-        for short_model in short_models:
-            if short_model in description:
-                model = short_model
-                comp_type = model_sel.loc[model_sel["Model Family"] == short_model, "Compressor Type"].values[0]
-                comp_family = model_sel.loc[model_sel["Model Family"] == short_model, "Compressor Family"].values[0]
-                return model, comp_type, comp_family
-            else:
-                continue
-            
     return "Unknown_Model", "", "Unknown_Family"
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
