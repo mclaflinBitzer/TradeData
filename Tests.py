@@ -68,6 +68,7 @@ def test_string_match_false2(models=models):
 '''
 
 def test_distribution(new_data, old_data):
+    print("Testing distribution of new data against old data")
     if len(old_data.index) == 0:
         old_data = new_data
     four_months_ago = old_data['Date'].max() - pd.DateOffset(months=3)
@@ -107,6 +108,6 @@ def test_distribution(new_data, old_data):
     else:
         print("No model distribution deviations detected")
 
-
+    print("Testing distribution of new data against old data completed")
 #def run_tests(data):
     #ipytest.run('-vv')

@@ -6,6 +6,7 @@ from Tests import test_distribution
 def main():
     # Load Data
     new_data, models, old_data = load_data('C:/Tradedata_output/data.csv')
+    print("load data was completed")
     
     # Transform Data
     transformed_new_data = transform_data(new_data, models)

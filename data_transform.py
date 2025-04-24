@@ -3,7 +3,7 @@ import pandas as pd
 import swifter
 
 def transform_data(raw_data, models):
-
+    
     raw_data = raw_data.copy()
     models = models.copy()
     
@@ -33,7 +33,7 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Convert strings to upper case to make atring matching easier
-
+    print("Converting strings to upper case")
     raw_data ["Indian_Importer"] = raw_data["Indian_Importer"].str.upper()
     raw_data ["Foreign_Exporter"] = raw_data["Foreign_Exporter"].str.upper()
     raw_data ["Detailed_Description"] = raw_data["Detailed_Description"].str.upper()
@@ -41,7 +41,7 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Categorize by main competitors
-
+    print("Categorizing by main competitors")
     competitor_mapping = {'Frascold': ['FRASCOLD'], 
                         'MYCOM': ['MAYEKAWA'],
                         'Snowman': ['FUJIAN', 'SRM', 'SNOWMAN'],
@@ -66,7 +66,7 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Categorize compressor types
-
+    print("Categorizing compressor types")
     compressor_mapping = {'Recip': 'RECIP',
                         'Scroll': 'SCROLL',
                         'Screw': 'SCREW',
@@ -77,7 +77,7 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Add Bock model mapping and replace numerical model descriptions with letter descriptions
-
+    print("Adding Bock model mapping and replacing numerical model descriptions with letter descriptions")
     Bock_Mapping = {'14057': ' FEX ',
                     '14056': ' FKX ',
                     '20250': ' FKX ',
@@ -113,13 +113,13 @@ def transform_data(raw_data, models):
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # Merge Comp_Type Columns into comp_types
-
+    print("Merging Comp_Type Columns into comp_types")
     raw_data['comp_types'] = raw_data['comp_types'] + raw_data['Compressor_Type']
 
     raw_data = raw_data.drop("Compressor_Type", axis=1)
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    print("Replacing compressor types with consolidated types")
     raw_data['comp_types'] = raw_data['comp_types'].replace({
     'RecipRecip': 'Recip',
     'ScrewScrew': 'Screw',

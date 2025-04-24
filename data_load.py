@@ -45,11 +45,12 @@ def load_data(old_data_path):
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Load suplliers with their aliases
-
+    print("Loading suppliers with their aliases")
     suppliers = pd.read_excel("K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/Supplier Names India.xlsx", header=2)
 
     suppliers = suppliers.to_dict('list')
 
+    print("Suppliers loaded:", suppliers)
     def is_nan(value):
         try:
             return math.isnan(value)
@@ -62,7 +63,7 @@ def load_data(old_data_path):
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Load model namings per supplier
-
+    print("Loading model namings per supplier")
     models = pd.read_excel("K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/Model Mapping.xlsx")
     models["Model Details"] = models["Model Details"].fillna('').astype(str)
     models['Model Family'] = models['Model Family'].astype(str)
@@ -70,9 +71,9 @@ def load_data(old_data_path):
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Load raw trade data
-
+    print("Loading raw trade data")
     base_dir = 'K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/'
-    subdirs = ['2021', '2022', '2023', '2024']
+    subdirs = ['2021', '2022', '2023', '2024', '2025']
 
     # Initialize an empty list to store the file paths
     filenames = []
@@ -91,37 +92,41 @@ def load_data(old_data_path):
                 
                 # Add the file path to the list
                 filenames.append(file_path)
-
+    print("Number of files loaded:", len(filenames))
+    print("initializing empty list for dataframes")
     dfs = []
 
+    print("Loading files into dataframes with for loop")
     for file in filenames:
+        print("Loading file:", file)
         dfs.append(pd.read_excel(os.path.join(base_dir, file), header=7, dtype={"数量": np.int64, '美元总金额': np.int64, '美元单价': np.int64, '卢比总金额': np.int64, '卢比单价': np.int64}, 
                                 usecols=use_cols))
+        print("File loaded:", file)
 
     raw_data = pd.concat(dfs)
 
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Translate column descriptions, drop unnecessary columns
-
+    print("Translating column descriptions")
     raw_data.rename(columns=column_translations, inplace=True)
     raw_data = raw_data.assign(Origin_Country='')
 
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # Convert na values of detailed description into string
-
+    print("Converting na values of detailed description into string")
     raw_data['Detailed_Description'] = raw_data['Detailed_Description'].fillna('').astype(str)
 
     #Convert date strings into datetime objects and sort by date
-
+    print("Converting date strings into datetime objects and sorting by date")
     raw_data['Date'] = pd.to_datetime(raw_data['Date'], format="%Y/%m/%d")
     raw_data.sort_values("Date", inplace=True)
 
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Filter out suppliers which are car companies
-
+    print("Filtering out suppliers which are car companies")
     raw_data['Foreign_Exporter'] = raw_data['Foreign_Exporter'].astype(str)
 
     raw_data = raw_data[~raw_data['Foreign_Exporter'].str.contains('MERCEDES|DAIMLER|VOLVO|TOYOTA|FORD|HYUNDAI|JAGUAR', case=False, regex=True)]
@@ -154,5 +159,5 @@ def load_data(old_data_path):
     print("Data Load complete!")
 
     
-
+    print("return new data, models, old data")
     return new_data, models, old_data
