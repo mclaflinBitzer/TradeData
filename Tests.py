@@ -105,6 +105,7 @@ def test_distribution(new_data, old_data):
     if len(outliers.index) > 0:
         print("The following model(s) mean(s) from the last month are outside its standard deviation(s) from the preceeding three months:")
         print(outliers[['Competitor', 'models', 'Quantity_mean_new', 'Quantity_mean_old', 'Quantity_std_old', 'Total_Dollar_Amount_mean_new', 'Total_Dollar_Amount_mean_old', 'Total_Dollar_Amount_std_old']])
+        outliers.to_csv("C:/Tradedata_Output/Outliers.csv", index=False)
     else:
         print("No model distribution deviations detected")
 
