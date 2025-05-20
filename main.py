@@ -16,7 +16,11 @@ def main():
     test_distribution(transformed_new_data, old_data)
     
     # Export Transformed Data
+    print("running export_data")
+    print("shape of transormed_new_data", transformed_new_data.shape)
     export_data(transformed_new_data, old_data)
+
+    print("pipeline completed successfully")
 
 if __name__ == "__main__":
     main()
