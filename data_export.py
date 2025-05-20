@@ -24,7 +24,7 @@ def export_data(new_data, old_data):
 
     print("Extracting to Excel and CSV")
     excel_output = output[["Year", "Month", "Competitor", "comp_types", "comp_family", "models", "Indian_Importer", "Detailed_Description", "Total_Euro_Amount", "Total_Rupees_Amount", "Quantity"]]
-    excel_output.to_excel(f"C:/Tradedata_Output/Import Data India_Compressors_{max_month}{max_year}.xlsx", index=False)
+    excel_output.to_excel(f"C:/Tradedata_Output/Import Data India_Compressors_{max_month}_{max_year}.xlsx", index=False)
 
     output.to_csv("C:/Tradedata_Output/data.csv", index=False)
 
