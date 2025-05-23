@@ -22,6 +22,7 @@ def load_data(old_data_path):
                         '币种': 'Currency',
                         '月度': 'Monthly',
                         '国外出口商': 'Foreign_Exporter',
+                        '原产国': 'Origin_Country',
                         '产销洲': 'Export_Continent',
                         '印度目的港': 'Entry_Port',
                         '国外装货港': 'Shipping_Port',
@@ -40,8 +41,9 @@ def load_data(old_data_path):
                         '合同号': 'Contract_No',
                         '进出口': 'Import_Or_Export'}
 
-    use_cols = ["海关编码", '详细产品名称', '日期', '印度进口商', '数量单位', '数量', '美元总金额', '美元单价', '卢比总金额', '卢比单价', '成交外币金额', '成交外币单价', '币种', '国外出口商', '产品描述', '进口商地址']
-
+    use_cols = ["海关编码", '详细产品名称', '日期', '印度进口商', '数量单位', '数量',
+            '美元总金额', '美元单价', '卢比总金额', '卢比单价', '成交外币金额',
+            '成交外币单价', '币种', '国外出口商', '产品描述', '进口商地址', '原产国']
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     #Load suplliers with their aliases
@@ -96,12 +98,45 @@ def load_data(old_data_path):
     print("initializing empty list for dataframes")
     dfs = []
 
+
+
+#original implimentation
+    # print("Loading files into dataframes with for loop")
+    # for file in filenames:
+    #     print("Loading file:", file)
+    #     dfs.append(pd.read_excel(os.path.join(base_dir, file), header=7, dtype={"数量": np.int64, '美元总金额': np.int64, '美元单价': np.int64, '卢比总金额': np.int64, '卢比单价': np.int64}, 
+    #                             usecols=use_cols))
+    #     print("File loaded:", file)
+
+
+    #testing new implementation to handle present/missing origin country columns in excel files 
     print("Loading files into dataframes with for loop")
     for file in filenames:
         print("Loading file:", file)
-        dfs.append(pd.read_excel(os.path.join(base_dir, file), header=7, dtype={"数量": np.int64, '美元总金额': np.int64, '美元单价': np.int64, '卢比总金额': np.int64, '卢比单价': np.int64}, 
-                                usecols=use_cols))
+        file_path = os.path.join(base_dir, file)
+        
+        # Read only header to check columns present
+        available_cols = pd.read_excel(file_path, header=7, nrows=0).columns.str.strip().tolist()
+        
+        # Filter use_cols to only columns present in this file
+        valid_use_cols = [col for col in use_cols if col in available_cols]
+        
+        # Read data using only valid columns
+        df = pd.read_excel(file_path, header=7, dtype={
+            "数量": np.int64, 
+            '美元总金额': np.int64, 
+            '美元单价': np.int64, 
+            '卢比总金额': np.int64, 
+            '卢比单价': np.int64
+        }, usecols=valid_use_cols)
+        
+        # Ensure '原产国' exists, fill with blank if missing
+        if '原产国' not in df.columns:
+            df['原产国'] = ''
+        
+        dfs.append(df)
         print("File loaded:", file)
+
 
     raw_data = pd.concat(dfs)
 
@@ -110,7 +145,7 @@ def load_data(old_data_path):
     #Translate column descriptions, drop unnecessary columns
     print("Translating column descriptions")
     raw_data.rename(columns=column_translations, inplace=True)
-    raw_data = raw_data.assign(Origin_Country='')
+    #raw_data = raw_data.assign(Origin_Country='')
 
     #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
