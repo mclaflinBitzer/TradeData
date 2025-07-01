@@ -54,13 +54,13 @@ def USD_EUR_Conversion(data, USD_EUR):
         merged_data = data.merge(USD_EUR, left_on='Date', right_on='DATE', how='left')
 
         # Currency conversion
-        merged_data['Total_Euro_Amount'] = merged_data['Total_Dollar_Amount'] / merged_data['Euro/US dollar (EXR.D.USD.EUR.SP00.A)']
+        merged_data['Total_Euro_Amount'] = merged_data['Total_Dollar_Amount'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
         merged_data['Total_Euro_Amount'] = merged_data['Total_Euro_Amount'].astype(int)
-        merged_data['Euros_Unit_Price'] = merged_data['USD_Unit_Price'] / merged_data['Euro/US dollar (EXR.D.USD.EUR.SP00.A)']
+        merged_data['Euros_Unit_Price'] = merged_data['USD_Unit_Price'] / merged_data['US dollar/Euro (EXR.D.USD.EUR.SP00.A)']
         merged_data['Euros_Unit_Price'] = merged_data['Euros_Unit_Price'].astype(int)
 
         # Drop the extra 'DATE' column from the merge if desired
-        merged_data.drop(columns=['DATE', 'Euro/US dollar (EXR.D.USD.EUR.SP00.A)'], inplace=True)
+        merged_data.drop(columns=['DATE', 'US dollar/Euro (EXR.D.USD.EUR.SP00.A)'], inplace=True)
 
         return merged_data
 

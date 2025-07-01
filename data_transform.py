@@ -8,8 +8,10 @@ def transform_data(raw_data, models):
     models = models.copy()
     
     print("Starting Data transformation")
+    print("read USD_EUR exchange rate data")
     USD_EUR = pd.read_csv(r"K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/USD_EUR.csv")
 
+    print()
     USD_EUR["DATE"] = pd.to_datetime(USD_EUR["DATE"], format=r"%Y-%m-%d")
     USD_EUR.sort_values("DATE", inplace=True)
 
@@ -17,7 +19,7 @@ def transform_data(raw_data, models):
     full_date_range = pd.date_range(start=USD_EUR.index.min(), end=USD_EUR.index.max())
     USD_EUR = USD_EUR.reindex(full_date_range)
 
-    USD_EUR['Euro/US dollar (EXR.D.USD.EUR.SP00.A)'] = USD_EUR['Euro/US dollar (EXR.D.USD.EUR.SP00.A)'].ffill().bfill()
+    USD_EUR['US dollar/Euro (EXR.D.USD.EUR.SP00.A)'] = USD_EUR['US dollar/Euro (EXR.D.USD.EUR.SP00.A)'].ffill().bfill()
 
     USD_EUR.reset_index(inplace=True)
     USD_EUR.rename(columns={'index': 'DATE'}, inplace=True)
