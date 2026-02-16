@@ -75,7 +75,7 @@ def load_data(old_data_path):
     #Load raw trade data
     print("Loading raw trade data")
     base_dir = 'K:/DESDN/mbd/pm/mpm_pma/00_Projekte/CSMO/Market Assessment/Market APAC/India/Handelsdatenprojekt/Daten/'
-    subdirs = ['2021', '2022', '2023', '2024', '2025']
+    subdirs = ['2021', '2022', '2023', '2024', '2025','2026']
 
     # Initialize an empty list to store the file paths
     filenames = []
